@@ -11,6 +11,9 @@
         .axis text {
             font-size: 8px;
         }
+        .bar-flavor {
+            fill: rgba(77, 175, 242, 0.842);
+        }
     </style>
 </head>
 <body>
@@ -32,7 +35,7 @@
 
         d3.json('cheeses.json').then(data => {
 
-            const filteredData = data.filter(d => d.country && d.type && d.country !== 'NA' && d.type !== 'NA');
+            const filteredData = data.filter(d => d.country && d.type && d.country && d.flavor !== 'NA' && d.type !== 'NA' && d.flavor !== 'NA');
             const aggregatedData = filteredData.map(d => {
 
                 if (d.country.includes("United Kingdom")|| d.country.includes("Great Britain") || d.country.includes("England")) {
@@ -90,14 +93,32 @@
             const countryData = d3.rollups(aggregatedData, v => v.length, d => d.country)
                                   .map(([country, count]) => ({ country, count }));
 
+            const flavorData = d3.rollups(aggregatedData, v => new Set(v.map(d => d.flavor)).size, d => d.country)
+                                 .map(([country, flavorCount]) => ({ country, flavorCount }));
+
+            // Merge cheese count and flavor count data
+            const mergedData = countryData.map(d => {
+                const flavorObj = flavorData.find(f => f.country === d.country) || { flavorCount: 0 };
+                return { country: d.country, typeCount: d.count, flavorCount: flavorObj.flavorCount };
+            });
+
             const xScale = d3.scaleBand()
-                .domain(countryData.map(d => d.country))
+                .domain(mergedData.map(d => d.country))
                 .range([0, chartWidth])
                 .padding(0.1);
 
             const yScale = d3.scaleLinear()
-                .domain([0, d3.max(countryData, d => d.count)])
+                .domain([0, d3.max(mergedData, d => (d.typeCount, d.flavorCount))])
                 .range([chartHeight, 0]);
+            
+            const xSubgroup = d3.scaleBand()
+                .domain(['typeCount', 'flavorCount'])
+                .range([0, xScale.bandwidth()])
+                .padding(0.05);
+            
+            const color = d3.scaleOrdinal()
+                .domain(['typeCount', 'flavorCount'])
+                .range(['rgba(225, 225, 77, 0.842)', 'rgba(77, 175, 242, 0.842)']);
 
             let leftAxis = d3.axisLeft(yScale); 
             let bottomAxis = d3.axisBottom(xScale)  
@@ -113,14 +134,19 @@
             svg.append("g")
                 .call(leftAxis);
 
-            countryData.forEach(d => {
-                svg.append("rect")
-                   .attr("class", "bar")
-                   .attr("x", xScale(d.country)) 
-                   .attr("y", yScale(d.count))   
-                   .attr("width", xScale.bandwidth())
-                   .attr("height", chartHeight - yScale(d.count)); 
-    });
+            svg.append("g")
+                .selectAll("g")
+                .data(mergedData)
+                .join("g")
+                .attr("transform", d => `translate(${xScale(d.country)},0)`)
+                .selectAll("rect")
+                .data(d => ['typeCount', 'flavorCount'].map(key => ({ key: key, value: d[key] })))
+                .join("rect")
+                .attr("x", d => xSubgroup(d.key))
+                .attr("y", d => yScale(d.value))
+                .attr("width", xSubgroup.bandwidth())
+                .attr("height", d => chartHeight - yScale(d.value))
+                .attr("fill", d => color(d.key));
         });
     </script>
 </body>
