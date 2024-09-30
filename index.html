@@ -1,5 +1,133 @@
 <html>
-    <body>
-        
-    </body>
+
+<head>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .bar {
+            fill: rgba(225, 225, 77, 0.842);
+        }
+
+        .axis text {
+            font-size: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Number of Cheese Types by Country</h1>
+    <svg width="6000" height="600"></svg>
+    <script>
+
+        let width = 1500;
+        let height = 600;
+        const margin = { top: 20, right: 30, bottom: 70, left: 40 };
+        const chartWidth = width - margin.left - margin.right;
+        const chartHeight = height - margin.top - margin.bottom;
+
+
+        const svg = d3.select("svg")
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+
+        d3.json('cheeses.json').then(data => {
+
+            const filteredData = data.filter(d => d.country && d.type && d.country !== 'NA' && d.type !== 'NA');
+            const aggregatedData = filteredData.map(d => {
+
+                if (d.country.includes("United Kingdom") || d.country.includes("Great Britain") || d.country.includes("England")) {
+                    d.country = "United Kingdom";
+                }
+                if (d.country.includes("Syria") || d.country.includes("Armenia") || d.country.includes("Turkey") || d.country.includes("Iraq") || d.country.includes("Afghanistan") || d.country.includes("Cyprus") || d.country.includes("Israel") || d.country.includes("Lebanon")) {
+                    d.country = "Middle East";
+                }
+                if (d.country.includes("Italy")) {
+                    d.country = "Italy";
+                }
+                if (d.country.includes("France")) {
+                    d.country = "France";
+                }
+                if (d.country.includes("India")) {
+                    d.country = "India";
+                }
+                if (d.country.includes("Scotland")) {
+                    d.country = "United Kingdom";
+                }
+
+                if (d.country.includes("United States")) {
+                    d.country = "United States";
+                }
+                if (d.country.includes("Sweden")) {
+                    d.country = "Sweden";
+                }
+                if (d.country.includes("Georgia")) {
+                    d.country = "United States";
+                }
+                if (d.country.includes("Netherlands")) {
+                    d.country = "Netherlands";
+                }
+                if (d.country.includes("Slovakia")) {
+                    d.country = "Slovakia";
+                }
+                if (d.country.includes("Mexico")) {
+                    d.country = "Mexico";
+                }
+                if (d.country.includes("Wales")) {
+                    d.country = "Wales";
+                }
+                if (d.country.includes("Germany")) {
+                    d.country = "Germany";
+                }
+                if (d.country.includes("China") || d.country.includes("Tibet") || d.country.includes("Nepal") || d.country.includes("Mongolia")) {
+                    d.country = "East Asia";
+                }
+                if (d.country.includes("New Zealand") || d.country.includes("Australia")) {
+                    d.country = "Oceania";
+                }
+                return d;
+
+            });
+            const countryData = d3.rollups(aggregatedData, v => v.length, d => d.country)
+                .map(([country, count]) => ({ country, count }));
+
+            const xScale = d3.scaleBand()
+                .domain(countryData.map(d => d.country))
+                .range([0, chartWidth])
+                .padding(0.1);
+
+            const yExtent = d3.extent(countryData, d => d.count);
+            const yScale = d3.scaleLinear()
+                .domain(yExtent)
+                .range([chartHeight, 0]);
+
+            let leftAxis = d3.axisLeft(yScale);
+            let bottomAxis = d3.axisBottom(xScale)
+
+
+            svg.append("g")
+                .attr("transform", `translate(0, ${chartHeight})`)
+                .call(bottomAxis)
+                .selectAll("text")
+                .attr("transform", "rotate(-45)")
+                .style("text-anchor", "end");
+
+            svg.append("g")
+                .call(leftAxis);
+
+            countryData.forEach(d => {
+                svg.append("rect")
+                    .attr("class", "bar")
+                    .attr("x", xScale(d.country))
+                    .attr("y", yScale(d.count))
+                    .attr("width", xScale.bandwidth())
+                    .attr("height", chartHeight - yScale(d.count));
+            });
+        });
+    </script>
+</body>
+
 </html>
