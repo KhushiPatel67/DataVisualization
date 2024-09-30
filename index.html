@@ -95,8 +95,9 @@
                 .range([0, chartWidth])
                 .padding(0.1);
 
+            const yExtent = d3.extent(countryData, d => d.count);
             const yScale = d3.scaleLinear()
-                .domain([0, d3.max(countryData, d => d.count)])
+                .domain(yExtent)
                 .range([chartHeight, 0]);
 
             let leftAxis = d3.axisLeft(yScale); 
