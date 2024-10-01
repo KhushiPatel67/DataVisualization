@@ -18,6 +18,10 @@
         .bar-flavor {
             fill: rgba(77, 175, 242, 0.842);
         }
+
+        .bar-texture {
+            fill: rgba(100, 200, 0, 0.8);
+        }
     </style>
 </head>
 
@@ -40,7 +44,7 @@
 
         d3.json('cheeses.json').then(data => {
 
-            const filteredData = data.filter(d => d.country && d.type && d.country && d.flavor !== 'NA' && d.type !== 'NA' && d.flavor !== 'NA');
+            const filteredData = data.filter(d => d.country && d.type && d.country && d.flavor !== 'NA' && d.type !== 'NA' && d.flavor !== 'NA' && d.texture !== 'NA');
             const aggregatedData = filteredData.map(d => {
 
                 if (d.country.includes("United Kingdom") || d.country.includes("Great Britain") || d.country.includes("England")) {
@@ -101,10 +105,20 @@
             const flavorData = d3.rollups(aggregatedData, v => new Set(v.map(d => d.flavor)).size, d => d.country)
                 .map(([country, flavorCount]) => ({ country, flavorCount }));
 
+            // make sure to split by commas and spaces after
+            const textureData = d3.rollups(aggregatedData, v => {
+                const allTextures = v.flatMap(d => d.texture.split(',').map(flavor => flavor.trim()));
+                return new Set(allTextures).size;
+            },
+                d => d.country
+            )
+                .map(([country, textureCount]) => ({ country, textureCount }));
+
             // Merge cheese count and flavor count data
             const mergedData = countryData.map(d => {
                 const flavorObj = flavorData.find(f => f.country === d.country) || { flavorCount: 0 };
-                return { country: d.country, typeCount: d.count, flavorCount: flavorObj.flavorCount };
+                const textureObj = textureData.find(f => f.country === d.country) || { textureCount: 0 };
+                return { country: d.country, typeCount: d.count, flavorCount: flavorObj.flavorCount, textureCount: textureObj.textureCount };
             });
 
             const xScale = d3.scaleBand()
@@ -113,17 +127,17 @@
                 .padding(0.1);
 
             const yScale = d3.scaleLinear()
-                .domain([0, d3.max(mergedData, d => (d.typeCount, d.flavorCount))])
+                .domain([0, d3.max(mergedData, d => (d.typeCount, d.flavorCount, d.textureCount))])
                 .range([chartHeight, 0]);
 
             const xSubgroup = d3.scaleBand()
-                .domain(['typeCount', 'flavorCount'])
+                .domain(['typeCount', 'flavorCount', 'textureCount'])
                 .range([0, xScale.bandwidth()])
                 .padding(0.05);
 
             const color = d3.scaleOrdinal()
-                .domain(['typeCount', 'flavorCount'])
-                .range(['rgba(225, 225, 77, 0.842)', 'rgba(77, 175, 242, 0.842)']);
+                .domain(['typeCount', 'flavorCount', 'textureCount'])
+                .range(['rgba(225, 225, 77, 0.842)', 'rgba(77, 175, 242, 0.842)', 'rgba(100, 200, 0, 0.8)']);
 
             let leftAxis = d3.axisLeft(yScale);
             let bottomAxis = d3.axisBottom(xScale)
@@ -145,7 +159,7 @@
                 .join("g")
                 .attr("transform", d => `translate(${xScale(d.country)},0)`)
                 .selectAll("rect")
-                .data(d => ['typeCount', 'flavorCount'].map(key => ({ key: key, value: d[key] })))
+                .data(d => ['typeCount', 'flavorCount', 'textureCount'].map(key => ({ key: key, value: d[key] })))
                 .join("rect")
                 .attr("x", d => xSubgroup(d.key))
                 .attr("y", d => yScale(d.value))
