@@ -107,7 +107,7 @@
 
             // make sure to split by commas and spaces after
             const textureData = d3.rollups(aggregatedData, v => {
-                const allTextures = v.flatMap(d => d.texture.split(',').map(flavor => flavor.trim()));
+                const allTextures = v.flatMap(d => d.texture.split(',').map(texture => texture.trim()));
                 return new Set(allTextures).size;
             },
                 d => d.country
