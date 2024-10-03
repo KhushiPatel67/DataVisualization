@@ -15,20 +15,18 @@
 </head>
 <body>
     <h1>Number of Cheese Types by Country</h1>
-    <svg width="6000" height="600"></svg>
+    <svg id="bar" width="1000" height="600"></svg>
     <script>
 
-        let width = 1500;
-        let height = 600;
+        const svg = d3.select('svg#bar');
+        const width = svg.attr('width');
+        const height = svg.attr('height');
         const margin = { top: 20, right: 30, bottom: 70, left: 40 };
         const chartWidth = width - margin.left - margin.right;
         const chartHeight = height - margin.top - margin.bottom;
 
-
-        const svg = d3.select("svg")
-            .append("g")
-            .attr("transform", `translate(${margin.left},${margin.top})`);
-
+        const chartArea = svg.append("g")
+                              .attr("transform", `translate(${margin.left},${margin.top})`);
 
         d3.json('cheeses.json').then(data => {
 
@@ -104,18 +102,18 @@
             let bottomAxis = d3.axisBottom(xScale)  
                         
 
-            svg.append("g")
+            chartArea.append("g")
                 .attr("transform", `translate(0, ${chartHeight})`)
                 .call(bottomAxis)
                 .selectAll("text")
                 .attr("transform", "rotate(-45)")
                 .style("text-anchor", "end");
 
-            svg.append("g")
+                chartArea.append("g")
                 .call(leftAxis);
 
             countryData.forEach(d => {
-                svg.append("rect")
+                chartArea.append("rect")
                    .attr("class", "bar")
                    .attr("x", xScale(d.country)) 
                    .attr("y", yScale(d.count))   
