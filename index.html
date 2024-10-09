@@ -1,5 +1,6 @@
 <html>
 
+
 <head>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
@@ -7,13 +8,16 @@
             font-family: Arial, sans-serif;
         }
 
+
         .bar {
             fill: rgba(225, 225, 77, 0.842);
         }
 
+
         .axis text {
             font-size: 8px;
         }
+
 
         .bar-flavor {
             fill: rgba(77, 175, 242, 0.842);
@@ -22,11 +26,15 @@
         .bar-texture {
             fill: rgba(100, 200, 0, 0.8);
         }
+
+        .aroma-bar {
+            fill: rgba(201, 102, 255, 0.842);
+        }
     </style>
 </head>
 
 <body>
-    <h1>Number of Cheese Types and Flavors by Country</h1>
+    <h1>Number of Cheese Types, Flavors, and Aromas by Country</h1>
     <svg width="6000" height="600"></svg>
     <script>
 
@@ -44,10 +52,10 @@
 
         d3.json('cheeses.json').then(data => {
 
-            const filteredData = data.filter(d => d.country && d.type && d.country && d.flavor !== 'NA' && d.type !== 'NA' && d.flavor !== 'NA' && d.texture !== 'NA');
+            const filteredData = data.filter(d => d.country && d.type && d.country && d.flavor !== 'NA' && d.type !== 'NA' && d.flavor !== 'NA' && d.aroma !== 'NA' && d.texture !== 'NA');
             const aggregatedData = filteredData.map(d => {
 
-                if (d.country.includes("United Kingdom") || d.country.includes("Great Britain") || d.country.includes("England")) {
+                if (d.country.includes("United Kingdom")  || d.country.includes("Great Britain") || d.country.includes("England")) {
                     d.country = "United Kingdom";
                 }
                 if (d.country.includes("Syria") || d.country.includes("Armenia") || d.country.includes("Turkey") || d.country.includes("Iraq") || d.country.includes("Afghanistan") || d.country.includes("Cyprus") || d.country.includes("Israel") || d.country.includes("Lebanon")) {
@@ -114,11 +122,20 @@
             )
                 .map(([country, textureCount]) => ({ country, textureCount }));
 
+
+            const aromaData = d3.rollups(aggregatedData, v => {
+                const allAromas = v.flatMap(d => d.aroma.split(',').map(aroma => aroma.trim()));
+                return new Set(allAromas).size;
+            },
+                d => d.country)
+                .map(([country, aromaCount]) => ({ country, aromaCount }));
+
             // Merge cheese count and flavor count data
             const mergedData = countryData.map(d => {
                 const flavorObj = flavorData.find(f => f.country === d.country) || { flavorCount: 0 };
                 const textureObj = textureData.find(f => f.country === d.country) || { textureCount: 0 };
-                return { country: d.country, typeCount: d.count, flavorCount: flavorObj.flavorCount, textureCount: textureObj.textureCount };
+                const aromaObj = aromaData.find(f => f.country === d.country) || { aromaCount: 0 };
+                return { country: d.country, typeCount: d.count, flavorCount: flavorObj.flavorCount, textureCount: textureObj.textureCount, aromaCount: aromaObj.aromaCount };
             });
 
             const xScale = d3.scaleBand()
@@ -127,17 +144,19 @@
                 .padding(0.1);
 
             const yScale = d3.scaleLinear()
-                .domain([0, d3.max(mergedData, d => (d.typeCount, d.flavorCount, d.textureCount))])
+                .domain([0, d3.max(mergedData, d => (d.typeCount, d.flavorCount, d.textureCount, d.aromaCount))])
                 .range([chartHeight, 0]);
 
+
             const xSubgroup = d3.scaleBand()
-                .domain(['typeCount', 'flavorCount', 'textureCount'])
+                .domain(['typeCount', 'flavorCount', 'textureCount', 'aromaCount'])
                 .range([0, xScale.bandwidth()])
                 .padding(0.05);
 
+
             const color = d3.scaleOrdinal()
-                .domain(['typeCount', 'flavorCount', 'textureCount'])
-                .range(['rgba(225, 225, 77, 0.842)', 'rgba(77, 175, 242, 0.842)', 'rgba(100, 200, 0, 0.8)']);
+                .domain(['typeCount', 'flavorCount', 'textureCount', 'aromaCount'])
+                .range(['rgba(225, 225, 77, 0.842)', 'rgba(77, 175, 242, 0.842)', 'rgba(201, 102, 255, 0.842)', 'rgba(100, 200, 0, 0.8)']);
 
             let leftAxis = d3.axisLeft(yScale);
             let bottomAxis = d3.axisBottom(xScale)
@@ -157,9 +176,9 @@
                 .selectAll("g")
                 .data(mergedData)
                 .join("g")
-                .attr("transform", d => `translate(${xScale(d.country)},0)`)
+                .attr("transform", d => `translate(${xScale(d.country)}, 0)`)
                 .selectAll("rect")
-                .data(d => ['typeCount', 'flavorCount', 'textureCount'].map(key => ({ key: key, value: d[key] })))
+                .data(d => ['typeCount', 'flavorCount', 'textureCount', 'aromaCount'].map(key => ({ key: key, value: d[key] })))
                 .join("rect")
                 .attr("x", d => xSubgroup(d.key))
                 .attr("y", d => yScale(d.value))
@@ -167,7 +186,10 @@
                 .attr("height", d => chartHeight - yScale(d.value))
                 .attr("fill", d => color(d.key));
         });
+
     </script>
+
 </body>
+
 
 </html>
