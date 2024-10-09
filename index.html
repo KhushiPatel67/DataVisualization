@@ -110,7 +110,12 @@
             const countryData = d3.rollups(aggregatedData, v => v.length, d => d.country)
                 .map(([country, count]) => ({ country, count }));
 
-            const flavorData = d3.rollups(aggregatedData, v => new Set(v.map(d => d.flavor)).size, d => d.country)
+            const flavorData = d3.rollups(aggregatedData, v => {
+                const allFlavors = v.flatMap(d => d.flavor.split(',').map(flavor => flavor.trim()));
+                return new Set(allFlavors).size;
+            },
+                d => d.country
+            )
                 .map(([country, flavorCount]) => ({ country, flavorCount }));
 
             // make sure to split by commas and spaces after
