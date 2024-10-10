@@ -52,7 +52,7 @@
 
         d3.json('cheeses.json').then(data => {
 
-            const filteredData = data.filter(d => d.country && d.type && d.country && d.flavor !== 'NA' && d.type !== 'NA' && d.flavor !== 'NA' && d.aroma !== 'NA' && d.texture !== 'NA');
+            const filteredData = data.filter(d => d.country && d.type && d.flavor && d.aroma && d.texture && d.type !== 'NA' && d.flavor !== 'NA' && d.aroma !== 'NA' && d.texture !== 'NA');
             const aggregatedData = filteredData.map(d => {
 
                 if (d.country.includes("United Kingdom")  || d.country.includes("Great Britain") || d.country.includes("England")) {
@@ -149,7 +149,7 @@
                 .padding(0.1);
 
             const yScale = d3.scaleLinear()
-                .domain([0, d3.max(mergedData, d => (d.typeCount, d.flavorCount, d.textureCount, d.aromaCount))])
+                .domain([0, d3.max(mergedData, d => Math.max(d.typeCount, d.flavorCount, d.textureCount, d.aromaCount))])
                 .range([chartHeight, 0]);
 
 
