@@ -34,7 +34,7 @@
 </head>
 
 <body>
-    <h1>Number of Cheese Types, Flavors, Aromas, and Textures by Country</h1>
+    <h1>Number of Cheese Types, Flavors, and Aromas by Country</h1>
     <svg width="6000" height="600"></svg>
     <script>
 
@@ -51,8 +51,9 @@
 
 
         d3.json('cheeses.json').then(data => {
-
+            // Filter data by removing NAs
             const filteredData = data.filter(d => d.country && d.type && d.flavor && d.aroma && d.texture && d.type !== 'NA' && d.flavor !== 'NA' && d.aroma !== 'NA' && d.texture !== 'NA');
+            // Simplify data by combining countries by common region/country.
             const aggregatedData = filteredData.map(d => {
 
                 if (d.country.includes("United Kingdom") || d.country.includes("Great Britain") || d.country.includes("England")) {
@@ -107,9 +108,12 @@
                 return d;
 
             });
+            // maps the variety of cheeses to countries
             const countryData = d3.rollups(aggregatedData, v => v.length, d => d.country)
                 .map(([country, count]) => ({ country, count }));
 
+            // maps flavors to country, removing dublicates and making sure 
+            // data with multiple flavors are split apart
             const flavorData = d3.rollups(aggregatedData, v => {
                 const allFlavors = v.flatMap(d => d.flavor.split(',').map(flavor => flavor.trim()));
                 return new Set(allFlavors).size;
@@ -118,7 +122,7 @@
             )
                 .map(([country, flavorCount]) => ({ country, flavorCount }));
 
-            // make sure to split by commas and spaces after
+            // make sure to split by commas after
             const textureData = d3.rollups(aggregatedData, v => {
                 const allTextures = v.flatMap(d => d.texture.split(',').map(texture => texture.trim()));
                 return new Set(allTextures).size;
@@ -127,7 +131,7 @@
             )
                 .map(([country, textureCount]) => ({ country, textureCount }));
 
-
+            // similar to before, spliting by commas and removing duplicates
             const aromaData = d3.rollups(aggregatedData, v => {
                 const allAromas = v.flatMap(d => d.aroma.split(',').map(aroma => aroma.trim()));
                 return new Set(allAromas).size;
@@ -135,7 +139,7 @@
                 d => d.country)
                 .map(([country, aromaCount]) => ({ country, aromaCount }));
 
-            // Merge cheese count and flavor count data
+            // Merge cheese count, flavor, texture, and aroma count data
             const mergedData = countryData.map(d => {
                 const flavorObj = flavorData.find(f => f.country === d.country) || { flavorCount: 0 };
                 const textureObj = textureData.find(f => f.country === d.country) || { textureCount: 0 };
@@ -143,6 +147,7 @@
                 return { country: d.country, typeCount: d.count, flavorCount: flavorObj.flavorCount, textureCount: textureObj.textureCount, aromaCount: aromaObj.aromaCount };
             });
 
+            // Scales
             const xScale = d3.scaleBand()
                 .domain(mergedData.map(d => d.country))
                 .range([0, chartWidth])
@@ -163,6 +168,7 @@
                 .domain(['typeCount', 'flavorCount', 'textureCount', 'aromaCount'])
                 .range(['rgba(225, 225, 77, 0.842)', 'rgba(77, 175, 242, 0.842)', 'rgba(201, 102, 255, 0.842)', 'rgba(100, 200, 0, 0.8)']);
 
+            // Axis creation
             let leftAxis = d3.axisLeft(yScale);
             let bottomAxis = d3.axisBottom(xScale)
 
@@ -191,6 +197,8 @@
                 .attr("height", d => chartHeight - yScale(d.value))
                 .attr("fill", d => color(d.key));
 
+
+            // created legend
             svg.append("circle").attr("cx", 800).attr("cy", 30).attr("r", 6).style("fill", "rgba(225, 225, 77, 0.842)")
             svg.append("circle").attr("cx", 800).attr("cy", 60).attr("r", 6).style("fill", "rgba(77, 175, 242, 0.842)")
             svg.append("circle").attr("cx", 800).attr("cy", 90).attr("r", 6).style("fill", "rgba(201, 102, 255, 0.842)")
@@ -199,7 +207,6 @@
             svg.append("text").attr("x", 820).attr("y", 60).text("Flavor").style("font-size", "15px").attr("alignment-baseline", "middle")
             svg.append("text").attr("x", 820).attr("y", 90).text("Aroma").style("font-size", "15px").attr("alignment-baseline", "middle")
             svg.append("text").attr("x", 820).attr("y", 120).text("Texture").style("font-size", "15px").attr("alignment-baseline", "middle")
-
         });
 
     </script>
