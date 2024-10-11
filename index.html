@@ -30,17 +30,25 @@
         .aroma-bar {
             fill: rgba(201, 102, 255, 0.842);
         }
+        .gridlines line {
+            stroke: #bbb;
+        }
+
+        .gridlines .domain {
+            stroke: none;
+        }
+        
     </style>
 </head>
 
 <body>
-    <h1>Number of Cheese Types, Flavors, and Aromas by Country</h1>
-    <svg width="6000" height="600"></svg>
+    <h1>Number of Cheese Types, Flavors, Aromas, and Textures by Country</h1>
+    <svg width="1400" height="600"></svg>
     <script>
 
-        let width = 1500;
+        let width = 1250;
         let height = 600;
-        const margin = { top: 20, right: 30, bottom: 70, left: 40 };
+        const margin = { top: 20, right: 30, bottom: 70, left: 60 };
         const chartWidth = width - margin.left - margin.right;
         const chartHeight = height - margin.top - margin.bottom;
 
@@ -151,12 +159,12 @@
             const xScale = d3.scaleBand()
                 .domain(mergedData.map(d => d.country))
                 .range([0, chartWidth])
-                .padding(0.1);
+                .padding(0.3);
 
             const yScale = d3.scaleLinear()
                 .domain([0, d3.max(mergedData, d => Math.max(d.typeCount, d.flavorCount, d.textureCount, d.aromaCount))])
                 .range([chartHeight, 0]);
-
+            
 
             const xSubgroup = d3.scaleBand()
                 .domain(['typeCount', 'flavorCount', 'textureCount', 'aromaCount'])
@@ -171,6 +179,14 @@
             // Axis creation
             let leftAxis = d3.axisLeft(yScale);
             let bottomAxis = d3.axisBottom(xScale)
+
+            let leftGridlines = d3.axisLeft(yScale)
+                .tickSize(-chartWidth - 10)  
+                .tickFormat('');  
+
+            svg.append('g')
+                .attr('class', 'y gridlines')  
+                .call(leftGridlines);
 
 
             svg.append("g")
@@ -196,17 +212,36 @@
                 .attr("width", xSubgroup.bandwidth())
                 .attr("height", d => chartHeight - yScale(d.value))
                 .attr("fill", d => color(d.key));
+            svg.append("text")
+                .attr("x", chartWidth / 2)
+                .attr("y", chartHeight + margin.bottom - 10) // Position below x-axis
+                .attr("text-anchor", "middle")
+                .style("font-size", "14px")
+                .text("Country");
 
+            // Adding y-axis label
+            svg.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", -margin.left + 20)
+                .attr("x", -chartHeight / 2)
+                .attr("text-anchor", "middle")
+                .style("font-size", "14px")
+                .text("Count");
 
             // created legend
-            svg.append("circle").attr("cx", 800).attr("cy", 30).attr("r", 6).style("fill", "rgba(225, 225, 77, 0.842)")
-            svg.append("circle").attr("cx", 800).attr("cy", 60).attr("r", 6).style("fill", "rgba(77, 175, 242, 0.842)")
-            svg.append("circle").attr("cx", 800).attr("cy", 90).attr("r", 6).style("fill", "rgba(201, 102, 255, 0.842)")
-            svg.append("circle").attr("cx", 800).attr("cy", 120).attr("r", 6).style("fill", "rgba(100, 200, 0, 0.8)")
-            svg.append("text").attr("x", 820).attr("y", 30).text("Cheese Type").style("font-size", "15px").attr("alignment-baseline", "middle")
-            svg.append("text").attr("x", 820).attr("y", 60).text("Flavor").style("font-size", "15px").attr("alignment-baseline", "middle")
-            svg.append("text").attr("x", 820).attr("y", 90).text("Aroma").style("font-size", "15px").attr("alignment-baseline", "middle")
-            svg.append("text").attr("x", 820).attr("y", 120).text("Texture").style("font-size", "15px").attr("alignment-baseline", "middle")
+            const legendX = chartWidth + 40; 
+            const legendYStart = 30; 
+            const legendSpacing = 30; 
+
+            svg.append("circle").attr("cx", legendX).attr("cy", legendYStart).attr("r", 6).style("fill", "rgba(225, 225, 77, 0.842)");
+            svg.append("circle").attr("cx", legendX).attr("cy", legendYStart + legendSpacing).attr("r", 6).style("fill", "rgba(77, 175, 242, 0.842)");
+            svg.append("circle").attr("cx", legendX).attr("cy", legendYStart + 2 * legendSpacing).attr("r", 6).style("fill", "rgba(201, 102, 255, 0.842)");
+            svg.append("circle").attr("cx", legendX).attr("cy", legendYStart + 3 * legendSpacing).attr("r", 6).style("fill", "rgba(100, 200, 0, 0.8)");
+
+            svg.append("text").attr("x", legendX + 20).attr("y", legendYStart).text("Cheese Type").style("font-size", "15px").attr("alignment-baseline", "middle");
+            svg.append("text").attr("x", legendX + 20).attr("y", legendYStart + legendSpacing).text("Flavor").style("font-size", "15px").attr("alignment-baseline", "middle");
+            svg.append("text").attr("x", legendX + 20).attr("y", legendYStart + 2 * legendSpacing).text("Aroma").style("font-size", "15px").attr("alignment-baseline", "middle");
+            svg.append("text").attr("x", legendX + 20).attr("y", legendYStart + 3 * legendSpacing).text("Texture").style("font-size", "15px").attr("alignment-baseline", "middle");
         });
 
     </script>
