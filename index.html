@@ -55,7 +55,7 @@
             const filteredData = data.filter(d => d.country && d.type && d.flavor && d.aroma && d.texture && d.type !== 'NA' && d.flavor !== 'NA' && d.aroma !== 'NA' && d.texture !== 'NA');
             const aggregatedData = filteredData.map(d => {
 
-                if (d.country.includes("United Kingdom")  || d.country.includes("Great Britain") || d.country.includes("England")) {
+                if (d.country.includes("United Kingdom") || d.country.includes("Great Britain") || d.country.includes("England")) {
                     d.country = "United Kingdom";
                 }
                 if (d.country.includes("Syria") || d.country.includes("Armenia") || d.country.includes("Turkey") || d.country.includes("Iraq") || d.country.includes("Afghanistan") || d.country.includes("Cyprus") || d.country.includes("Israel") || d.country.includes("Lebanon")) {
@@ -190,6 +190,16 @@
                 .attr("width", xSubgroup.bandwidth())
                 .attr("height", d => chartHeight - yScale(d.value))
                 .attr("fill", d => color(d.key));
+
+            svg.append("circle").attr("cx", 800).attr("cy", 30).attr("r", 6).style("fill", "rgba(225, 225, 77, 0.842)")
+            svg.append("circle").attr("cx", 800).attr("cy", 60).attr("r", 6).style("fill", "rgba(77, 175, 242, 0.842)")
+            svg.append("circle").attr("cx", 800).attr("cy", 90).attr("r", 6).style("fill", "rgba(201, 102, 255, 0.842)")
+            svg.append("circle").attr("cx", 800).attr("cy", 120).attr("r", 6).style("fill", "rgba(100, 200, 0, 0.8)")
+            svg.append("text").attr("x", 820).attr("y", 30).text("Cheese Type").style("font-size", "15px").attr("alignment-baseline", "middle")
+            svg.append("text").attr("x", 820).attr("y", 60).text("Flavor").style("font-size", "15px").attr("alignment-baseline", "middle")
+            svg.append("text").attr("x", 820).attr("y", 90).text("Aroma").style("font-size", "15px").attr("alignment-baseline", "middle")
+            svg.append("text").attr("x", 820).attr("y", 120).text("Texture").style("font-size", "15px").attr("alignment-baseline", "middle")
+
         });
 
     </script>
