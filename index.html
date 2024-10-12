@@ -30,6 +30,7 @@
         .aroma-bar {
             fill: rgba(201, 102, 255, 0.842);
         }
+
         .gridlines line {
             stroke: #bbb;
         }
@@ -37,12 +38,13 @@
         .gridlines .domain {
             stroke: none;
         }
-        
     </style>
 </head>
 
 <body>
     <h1>Number of Cheese Types, Flavors, Aromas, and Textures by Country</h1>
+    <p>Khushi Patel (ksp67), Lauren Kwan (lmk258), Jose Vizueth (jdv72), Kody Yang (kyy23)
+    </p>
     <svg width="1400" height="600"></svg>
     <script>
 
@@ -164,7 +166,7 @@
             const yScale = d3.scaleLinear()
                 .domain([0, d3.max(mergedData, d => Math.max(d.typeCount, d.flavorCount, d.textureCount, d.aromaCount))])
                 .range([chartHeight, 0]);
-            
+
 
             const xSubgroup = d3.scaleBand()
                 .domain(['typeCount', 'flavorCount', 'textureCount', 'aromaCount'])
@@ -181,11 +183,11 @@
             let bottomAxis = d3.axisBottom(xScale)
 
             let leftGridlines = d3.axisLeft(yScale)
-                .tickSize(-chartWidth - 10)  
-                .tickFormat('');  
+                .tickSize(-chartWidth - 10)
+                .tickFormat('');
 
             svg.append('g')
-                .attr('class', 'y gridlines')  
+                .attr('class', 'y gridlines')
                 .call(leftGridlines);
 
 
@@ -229,9 +231,9 @@
                 .text("Count");
 
             // created legend
-            const legendX = chartWidth + 40; 
-            const legendYStart = 30; 
-            const legendSpacing = 30; 
+            const legendX = chartWidth + 40;
+            const legendYStart = 30;
+            const legendSpacing = 30;
 
             svg.append("circle").attr("cx", legendX).attr("cy", legendYStart).attr("r", 6).style("fill", "rgba(225, 225, 77, 0.842)");
             svg.append("circle").attr("cx", legendX).attr("cy", legendYStart + legendSpacing).attr("r", 6).style("fill", "rgba(77, 175, 242, 0.842)");
